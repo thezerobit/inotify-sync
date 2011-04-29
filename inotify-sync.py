@@ -15,6 +15,10 @@
 # Acknowledgements:
 #   Much of this code cribbed from Pyinotify example code.
 #
+# Copyright (c) 2011 Stephen A. Goss 
+# license: WTFPL 2.0
+#
+
 import os
 import sys
 import shutil
