@@ -37,7 +37,6 @@ class OnWriteHandler(pyinotify.ProcessEvent):
         assert(source_path.startswith(self.path1))
         clipped = source_path[len(self.path1):]
         if self.ignore_file(clipped):
-            # print "ignoring: " + clipped
             return False
         target = self.path2 + clipped
         return target
@@ -45,12 +44,28 @@ class OnWriteHandler(pyinotify.ProcessEvent):
     def do_copy(self, source_file):
         target_file = self.get_target_path(source_file)
         if target_file:
-            # print 'copying ' + source_file + ' to ' + target_file
-            shutil.copyfile(source_file, target_file)
+            print 'Copying ' + source_file + ' to ' + target_file
+            try:
+                shutil.copyfile(source_file, target_file)
+            except:
+                print 'ERROR copying ' + source_file + ' to ' + target_file
+
+    def do_delete(self, source_file):
+        target_file = self.get_target_path(source_file)
+        if target_file and os.path.exists(target_file):
+            print 'Removing ' + target_file
+            try:
+                os.remove(target_file)
+            except:
+                print 'ERROR removing ' + target_file
 
     def process_IN_MODIFY(self, event):
         print '==> Modification detected'
         self.do_copy(event.pathname)
+
+    def process_IN_DELETE(self, event):
+        print '==> File deletion detected'
+        self.do_delete(event.pathname)
 
 def auto_sync(path1, path2):
     wm = pyinotify.WatchManager()
