@@ -29,16 +29,24 @@ class OnWriteHandler(pyinotify.ProcessEvent):
         self.path1 = path1
         self.path2 = path2
 
+    def ignore_file(self, filepath):
+        to_ignore = ['.hg', '.git']
+        return len(filter(lambda x : x in to_ignore, filepath.split('/')[:-1])) > 0
+
     def get_target_path(self, source_path):
         assert(source_path.startswith(self.path1))
         clipped = source_path[len(self.path1):]
+        if self.ignore_file(clipped):
+            # print "ignoring: " + clipped
+            return False
         target = self.path2 + clipped
         return target
 
     def do_copy(self, source_file):
         target_file = self.get_target_path(source_file)
-        # print 'copying ' + source_file + ' to ' + target_file
-        shutil.copyfile(source_file, target_file)
+        if target_file:
+            # print 'copying ' + source_file + ' to ' + target_file
+            shutil.copyfile(source_file, target_file)
 
     def process_IN_MODIFY(self, event):
         print '==> Modification detected'
